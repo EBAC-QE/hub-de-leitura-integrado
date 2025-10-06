@@ -14,8 +14,9 @@ const bookSchema = Joi.object({
     .integer()
     .min(1400)
     .max(new Date().getFullYear())
+    .allow(null)
     .optional(),
-  pages: Joi.number().integer().min(1).optional(),
+  pages: Joi.number().integer().min(1).allow(null).optional(),
   format: Joi.string().valid("Físico", "Digital", "Audiobook").optional(),
   total_copies: Joi.number().integer().min(1).optional().default(1),
   available_copies: Joi.number().integer().min(0).optional(),
