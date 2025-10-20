@@ -723,6 +723,59 @@
                 this.createTokenTimer();
                 this.startTokenCheck();
                 this.showEducationalInfo();
+                
+                // Expor métodos globalmente para manipulação via DevTools
+                window.tokenManager = this;
+                console.log('🎓 TokenManager disponível globalmente para testes!');
+                console.log('📋 Comandos disponíveis:');
+                console.log('   tokenManager.showEducationalModal() - Forçar modal educacional');
+                console.log('   tokenManager.getCookie("jwt_education_shown") - Ver cookie');
+                console.log('   tokenManager.setCookie("jwt_education_shown", "true", 30) - Definir cookie');
+                console.log('   tokenManager.deleteCookie("jwt_education_shown") - Remover cookie');
+                console.log('   tokenManager.resetEducationalModal() - Resetar para mostrar novamente');
+            }
+
+            // Métodos de manipulação de cookies para fins didáticos
+            setCookie(name, value, days = 30) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
+                console.log(`🍪 Cookie definido: ${name}=${value} (${days} dias)`);
+                return true;
+            }
+
+            getCookie(name) {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    const [cookieName, cookieValue] = cookie.trim().split('=');
+                    if (cookieName === name) {
+                        console.log(`🍪 Cookie lido: ${name}=${cookieValue}`);
+                        return cookieValue;
+                    }
+                }
+                console.log(`🍪 Cookie não encontrado: ${name}`);
+                return null;
+            }
+
+            deleteCookie(name) {
+                document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
+                console.log(`🍪 Cookie removido: ${name}`);
+                return true;
+            }
+
+            // Métodos para controle do modal educacional
+            showEducationalModal() {
+                console.log('🎓 Forçando exibição do modal educacional...');
+                this.deleteCookie('jwt_education_shown');
+                setTimeout(() => {
+                    this.showEducationalInfo();
+                }, 100);
+            }
+
+            resetEducationalModal() {
+                console.log('🔄 Resetando modal educacional...');
+                this.deleteCookie('jwt_education_shown');
+                alert('Modal educacional foi resetado! Recarregue a página para vê-lo novamente.');
             }
 
             createTokenTimer() {
@@ -934,8 +987,15 @@
             }
 
             showEducationalInfo() {
-                // Mostrar info educacional na primeira vez
-                if (!localStorage.getItem('jwt_education_shown')) {
+                // Mostrar info educacional na primeira vez - usando COOKIE para fins didáticos
+                
+                // FORÇA modal aparecer sempre para demonstração
+                console.log('🧪 DEBUG: Verificando cookie jwt_education_shown...');
+                const cookieExists = this.getCookie('jwt_education_shown');
+                console.log('🍪 Cookie atual:', cookieExists);
+                
+                if (!cookieExists) {
+                    console.log('✅ Cookie não existe - Modal vai aparecer');
                     setTimeout(() => {
                         const modal = document.createElement('div');
                         modal.innerHTML = `
@@ -981,7 +1041,7 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button class="btn btn-primary" onclick="this.closest('.modal').parentElement.remove(); localStorage.setItem('jwt_education_shown', 'true')">
+                                    <button class="btn btn-primary" onclick="console.log('🍪 Criando cookie jwt_education_shown=true'); this.closest('.modal').parentElement.remove(); window.tokenManager.setCookie('jwt_education_shown', 'true', 30); console.log('✅ Cookie criado! Verifique DevTools > Application > Cookies');">
                                         <i class="fas fa-check"></i> Entendi! Vamos testar
                                     </button>
                                 </div>
@@ -990,7 +1050,11 @@
                     </div>
                 `;
                         document.body.appendChild(modal);
+                        console.log('🎓 Modal educacional adicionado ao DOM');
                     }, 2000);
+                } else {
+                    console.log('❌ Cookie existe - Modal NÃO vai aparecer');
+                    console.log('💡 Use tokenManager.resetEducationalModal() para resetar');
                 }
             }
 
